@@ -1,1075 +1,1057 @@
-// 테스트 시간
-console.log("테스트 시간 24-09-11-18:07");
+//Sitemap 적용시간
+console.log("2024-09-26 14:51");
 
-//접속 국가
-const getLocale = () => {
-  const localeOrigin = navigator.language;
-  const localeConvert = localeOrigin.replace("-", "_");
-  if (localeConvert.length === 5) {
-    return localeConvert;
-  }
-};
+//허용 도메인
+// qav2 테스트 페이지
+// const allowedDomains = ["www.teescanner.com", "m.teecanner.com","wwwqav2.teescanner.com", "qav2.teescanner.com"]; 
+// const allowedDomains = ["www.teescanner.com", "m.teescanner.com"]; 
+const allowedDomains = ["wwwqav2.teescanner.com", "qav2.teescanner.com"]; //QA 환경
 
-const mileageAttr = SalesforceInteractions.cashDom(".mileage").find("p.num").text();
-const testId = SalesforceInteractions.cashDom(".login_user").find(".id").text();
-const testMoId = SalesforceInteractions.cashDom(".userid").text();
+//접속 도메인
+const hostDomain = window.location.hostname;
+
+//접속 기기 너비 확인
+// const deviceWidth = window.innerWidth;
+
+// if (deviceWidth > 768) {
+//     //PC
+
+// } else {
+//     //Mobile
+
+// }
 
 
-const domain = window.location.hostname;
-const allowedDomains = ["www.golfzoncounty.com", "m.golfzoncounty.com", "mv2qa.golfzoncounty.com"];
-if (allowedDomains.includes(domain)) {
+//접속 도메인이 허용 도메인에 포함 시 Sitemap 초기화
+if (allowedDomains.includes(hostDomain)) {
   SalesforceInteractions.init({
-    cookieDomain: domain
+    cookieDomain: hostDomain
   }).then(() => {
-    const sitemapConfig = {
+    //Debugging
+    SalesforceInteractions.setLoggingLevel(5)
+
+    //접속 지역
+    // const getLocale = () => {
+    //     let locale = navigator.language;
+    //     if (locale.length === 5) {
+    //         locale = locale.replace("-", "_");
+    //         return locale;
+    //     } else {
+    //         return null;
+    //     }
+    // }
+
+    //메인에서 로그인 정보 가져오기
+    const getLoginMain = () => {
+      //메인에서 확인되는 로그인 요구 영역 확인
+      const tourEle = SalesforceInteractions.cashDom(".golf-tour-wrap .recently-swiper-wrap .no-prefer-area.no");
+      if (tourEle.length !== 0) {
+        //로그인 버튼 확인
+        const btnLogin = SalesforceInteractions.cashDom(tourEle).find("button").text();
+        if (btnLogin === "로그인") {
+          sessionStorage.setItem("logBool", "미로그인")
+          console.log("미로그인")
+          return "미로그인"
+        }
+      } else {
+        sessionStorage.setItem("logBool", "로그인")
+        console.log("로그인")
+        return "로그인"
+      }
+    }
+
+    // const getLogin = () => {
+    //     const recentlyEl = SalesforceInteractions.cashDom(".profile-info-area > div > button > p.txt > strong");
+    //     console.log(recentlyEl);
+    //     if (recentlyEl.text() === "로그인") {
+    //         console.log("미 로그인")
+    //         return "false";
+    //     } else {
+    //         console.log("로그인")
+    //         return "true";
+    //     }
+    // }
+
+
+    //Parameter 값 가져오기
+    const getUrl = new URL(window.location.href);
+    const urlParams = getUrl.searchParams;
+    //Tour Type
+    const tourType = urlParams.get("tourType");
+    //Tour Type Seq
+    const tourTypeSeq = urlParams.get("tourTypeSeq");
+    //Tab 
+    const tabType = urlParams.get("tab");
+    //골프장 번호
+    const golfClubSeq = urlParams.get("golfclub_seq");
+    //티타임 번호
+    const teetimeSeq = urlParams.get("teetime_seq");
+    //예약 번호
+    const bookingSeq = urlParams.get("order_booking_seq");
+
+
+    //골프장 상세 방문 확인
+    // const chkDetailType = () => {
+    //     //골프장 이름 탭 별로 방문 페이지 이름 변경
+    //     let pageName;
+    //     if(window.location.pathname === "/booking/detail") {
+    //         switch(tabType) {
+    //             case "teetime":
+    //                 pageName = "골프장 상세(티타임) 방문";
+    //                 break;
+    //             case "introduce":
+    //                 pageName = "골프장 상세(골프장 소개) 방문";
+    //                 break;
+    //             case "review":
+    //                 pageName = "골프장 상세(리뷰) 방문";
+    //                 break;
+    //             case "blogReview":
+    //                 pageName = "골프장 상세(블로그리뷰) 방문";
+    //                 break;
+    //             case "news":
+    //                 pageName = "골프장 상세(골프장 소식) 방문";
+    //                 break;
+    //             default: 
+    //                 pageName = "골프장 상세 방문"
+    //                 break;
+    //         }
+    //         return pageName;
+    //     }
+    // }
+
+
+    //접속 디바이스 확인
+    // const getDevice = () => {
+    //     let userDevice;
+    //     if (navigator.userAgent.match(/iPhone/i)) {
+    //         userDevice = "iPhone"
+    //     } else if (navigator.userAgent.match(/Android/i)) {
+    //         userDevice = "Android"
+    //     } else if (navigator.userAgent.match(/iPad/i)) {
+    //         userDevice = "iPad"
+    //     } else {
+    //         if (deviceWidth > 1024) {
+    //             userDevice = "PC"
+    //         } else {
+    //             userDevice = "Mobile"
+    //         }
+    //     }
+    //     return userDevice;
+    // }
+
+
+    //Configuration
+    const config = {
       global: {
-        locale: getLocale(),
+        // locale: getLocale(),
         onActionEvent: (actionEvent) => {
           actionEvent.user = actionEvent.user || {};
           actionEvent.user.identities = actionEvent.user.identities || {};
           actionEvent.user.attributes = actionEvent.user.attributes || {};
-          actionEvent.user.attributes.logBool = true
-          actionEvent.user.attributes.mileage = mileageAttr
-          actionEvent.user.attributes.testId = testId
-          actionEvent.user.attributes.testMoId = testMoId
+          if (sessionStorage.getItem("logBool") !== null) {
+            actionEvent.user.attributes.loginBool = sessionStorage.getItem("logBool")
+          }
           return actionEvent;
         },
         listeners: [
-          SalesforceInteractions.listener("click", "#header .util ul li a", (e) => {
-            SalesforceInteractions.sendEvent({
-              interaction: {
-                name: "PC_공통_회원가입 클릭"
+          //즐겨찾기, 북마크
+          SalesforceInteractions.listener("click", ".header .right-menu .btn.btn-bookmark", (el) => {
+            const btnBookmark = SalesforceInteractions.cashDom(el.target);
+            if (SalesforceInteractions.cashDom(btnBookmark).hasClass("active") === false) {
+              const golfClubName = SalesforceInteractions.cashDom(".header .navigation .tit span");
+              if (golfClubName !== null) {
+                SalesforceInteractions.sendEvent({
+                  interaction: {
+                    name: "골프장 즐겨찾기"
+                  },
+                  user: {
+                    attributes: {
+                      latestBookmarkClub: SalesforceInteractions.cashDom(golfClubName).text()
+                    }
+                  }
+                })
               }
-            })
+            }
           }),
-          SalesforceInteractions.listener("click", ".close_btn", (e) => {
-            SalesforceInteractions.sendEvent({
-              interaction: {
-                name: "PC_공통_팝업_닫기 클릭"
-              },
-              user: {
-                attributes: {
-                  closePopup: "Y"
+          //찜, Pin
+          SalesforceInteractions.listener("click", ".btm-golf-layer-info .btn-area .btn.btn-pin", (el) => {
+            const btnPin = SalesforceInteractions.cashDom(el.target);
+            if (SalesforceInteractions.cashDom(btnPin).hasClass("active") === false) {
+              const golfInfoLayer = SalesforceInteractions.cashDom(btnPin).closest(".btm-golf-layer-info");
+              const golfClubName = SalesforceInteractions.cashDom(golfInfoLayer).find(".tit-area > strong").text();
+              SalesforceInteractions.sendEvent({
+                interaction: {
+                  name: "골프장 찜 등록"
                 },
-              },
-            })
-          }),
-        ],
-        contentZones: [
-          {
-            name: "[TEST] PC_공통_팝업창"
-          }
+                user: {
+                  attributes: {
+                    latestPinClub: golfClubName
+                  }
+                }
+              });
+            }
+          })
         ]
       },
       pageTypeDefault: {
-        name: "default",
+        name: "티스캐너 페이지 접속",
         interaction: {
-          name: "default",
-        },
+          name: "티스캐너 페이지 접속"
+        }
       },
       pageTypes: [
         {
-          // PC_메인 페이지
-          name: "PC_메인 방문",
+          name: "메인 방문",
           isMatch: () => {
-            if (window.location.href === "https://www.golfzoncounty.com/" || window.location.href === "https://www.golfzoncounty.com/main") {
+            if (window.location.pathname === "/home") {
               return true;
             }
           },
+          // isMatch: () => new Promise((resolve, reject) => {
+          //     let isMatchPDP = setTimeout(() => {
+          //         return SalesforceInteractions.DisplayUtils.pageElementLoaded("#wrap.main-wrap", "html").then(() => {
+          //             isMatchPDP = null;
+          //             resolve(true);
+          //         })
+          //     }, 1000);
+          //     return SalesforceInteractions.DisplayUtils.pageElementLoaded("#wrap.main-wrap", "html").then(() => {
+          //         clearTimeout(isMatchPDP);
+          //         isMatchPDP = null;
+          //         resolve(true);
+          //     })
+          // }),
           interaction: {
-            name: "PC_메인 방문",
+            name: "메인 방문"
+          },
+          onActionEvent: (actionEvent) => {
+            actionEvent.user = actionEvent.user || {};
+            actionEvent.user.identities = actionEvent.user.identities || {};
+            actionEvent.user.attributes = actionEvent.user.attributes || {};
+            //로그인 여부 확인하기
+            actionEvent.user.attributes.loginBool = getLoginMain();
+            return actionEvent;
           },
           contentZones: [
-            {
-              name: "[TEST] PC_메인_슬라이드"
-            }
+            { name: "메인 페이지 최상단", selector: "header.header" },
+            { name: "메인 페이지 전체" }
           ]
         },
         {
-          // PC_예약_티타임선택 페이지
-          name: "PC_예약(티타임선택) 방문",
+          name: "로그인 방문",
           isMatch: () => {
-            if (window.location.href.includes("https://www.golfzoncounty.com/reserve/main")) {
+            if (window.location.pathname === "/login/login") {
               return true;
             }
           },
           interaction: {
-            name: "PC_예약(티타임선택) 방문",
+            name: "로그인 방문"
           },
           listeners: [
-            SalesforceInteractions.listener("click", ".btn_right > a.btn6", (ele) => {
-              SalesforceInteractions.sendEvent({
-                interaction: {
-                  name: `PC_예약(티타임선택) 예약하기 클릭`,
-                },
-              })
-            }),
-          ]
-        },
-        {
-          // PC_호시그린
-          name: "PC_호시그린 방문",
-          isMatch: () => {
-            if (SalesforceInteractions.cashDom(".title").text() === "호시그린") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_호시그린 방문",
-          },
-        },
-        {
-          // PC_미션존 페이지 
-          name: "PC_미션존 방문",
-          isMatch: () => {
-            if (window.location.href === "https://www.golfzoncounty.com/myround/mission/main") {
-              return true
-            }
-          },
-          interaction: {
-            name: "PC_미션존 방문",
-          },
-
-        },
-        {
-          // PC_쿠폰 페이지
-          name: "PC_쿠폰함 방문",
-          isMatch: () => {
-            if (window.location.href === "https://www.golfzoncounty.com/myround/coupon") {
-              return true
-            }
-          },
-          interaction: {
-            name: "PC_쿠폰함 방문",
-          },
-        },
-        {
-          // PC_골프텔 페이지
-          name: "PC_골프텔 방문",
-          isMatch: () => {
-            if (SalesforceInteractions.cashDom(".golf_tel").length > 0) {
-              return true
-            }
-          },
-          interaction: {
-            name: "PC_골프텔 방문",
-          },
-        },
-        {
-          // PC_이벤트 페이지
-          name: "PC_이벤트 방문",
-          isMatch: () => {
-            if (SalesforceInteractions.cashDom(".ev_list").length > 0) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_이벤트 방문",
-          },
-        },
-        {
-          // PC_예약 확인/정보 페이지
-          name: "PC_예약 확인/정보 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://www.golfzoncounty.com/reserve/reserveConfirm")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_예약 확인/정보 방문",
-          },
-        },
-        {
-          // PC_예약 완료 페이지
-          name: "PC_예약 완료 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://www.golfzoncounty.com/reserve/reserveComplete")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_예약 완료 방문",
-          },
-        },
-        {
-          // PC_코스소개
-          name: "PC_코스소개 방문",
-          isMatch: () => {
-            if (SalesforceInteractions.cashDom("#course_tit").length > 0) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_코스소개 방문",
-          },
-        },
-        {
-          // PC_예약안내
-          name: "PC_예약안내 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://www.golfzoncounty.com/gcounty/info/reservepc")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_예약안내 방문",
-          },
-        },
-        {
-          // PC_요금안내
-          name: "PC_요금안내 방문",
-          isMatch: () => {
-            if (window.location.href.includes("feepc")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_요금안내 방문",
-          },
-        },
-        {
-          // PC_취소 및 예약규정
-          name: "PC_취소 및 예약규정 방문",
-          isMatch: () => {
-            if (window.location.href.includes("cancelpc")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_취소 및 예약규정 방문",
-          },
-
-        },
-        {
-          // PC_이용안내
-          name: "PC_이용안내 방문",
-          isMatch: () => {
-            if (window.location.href.includes("usepc")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_이용안내 방문",
-          },
-        },
-        {
-          // PC_공지사항
-          name: "PC_공지사항 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://www.golfzoncounty.com/countyBoard/notice")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_공지사항 방문",
-          },
-        },
-        {
-          // PC_서비스이용약관
-          name: "PC_서비스이용약관 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://www.golfzoncounty.com/myround/unified_terms")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_서비스이용약관 방문",
-          },
-        },
-        {
-          // PC_개인정보처리방침
-          name: "PC_개인정보처리방침 방문",
-          isMatch: () => {
-            if (window.location.href === "https://www.golfzoncounty.com/common/config/customer?cd=private") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_개인정보처리방침 방문",
-          },
-        },
-        {
-          // PC_영상정보처리기기
-          name: "PC_영상정보처리기기 방문",
-          isMatch: () => {
-            if (window.location.href === "https://www.golfzoncounty.com/common/config/customer?cd=video") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_영상정보처리기기 방문",
-          },
-        },
-        {
-          // PC_골프장요약
-          name: "PC_골프장요약 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://www.golfzoncounty.com/gcounty/info/main")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_골프장요약 방문",
-          },
-        },
-        {
-          // PC_골프장이용약관
-          name: "PC_골프장이용약관 방문",
-          isMatch: () => {
-            if (window.location.href === "https://www.golfzoncounty.com/common/config/customer?cd=golfclub") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_골프장이용약관 방문",
-          },
-        },
-        {
-          // PC_로그인
-          name: "PC_로그인 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://www.golfzoncounty.com/member/login")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_로그인 방문",
-          },
-        },
-        {
-          // PC_회원가입
-          name: "PC_회원가입 방문",
-          isMatch: () => {
-            if (window.location.href === "https://www.golfzoncounty.com/member/join") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_회원가입 방문",
-          },
-        },
-        {
-          // PC_회사소개
-          name: "PC_회사소개 방문",
-          isMatch: () => {
-            if (window.location.href === "https://www.golfzoncounty.com/common/enjoy") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_회사소개 방문",
-          },
-        },
-        {
-          // PC_고객센터
-          name: "PC_고객센터 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://www.golfzoncounty.com/common/config/customer?cd=cs")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_고객센터 방문",
-          },
-        },
-        {
-          // PC_내 프로필
-          name: "PC_내 프로필 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://www.golfzoncounty.com/myround/profile")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_내 프로필 방문",
-          },
-          listeners: [
-            SalesforceInteractions.listener("click", ".myProfile .profile_top ul li.mission a", (ele) => {
-              SalesforceInteractions.sendEvent({
-                interaction: {
-                  name: `PC_내프로필_미션 클릭`,
-                },
-              })
-            }),
-            SalesforceInteractions.listener("click", ".myProfile .profile_top ul li.coupon a", (ele) => {
-              SalesforceInteractions.sendEvent({
-                interaction: {
-                  name: `PC_내프로필_쿠폰 클릭`,
-                },
-              })
-            }),
-            SalesforceInteractions.listener("click", ".myProfile .profile_top ul li.mileage a", (ele) => {
-              SalesforceInteractions.sendEvent({
-                interaction: {
-                  name: `PC_내프로필_마일리지 클릭`,
-                },
-              })
-            }),
-          ],
-        },
-        {
-          // PC_예약 내역
-          name: "PC_예약 내역 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://www.golfzoncounty.com/reserve/info/booking")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_예약 내역 방문",
-          },
-        },
-        {
-          // PC_마일리지
-          name: "PC_마일리지 방문",
-          isMatch: () => {
-            if (window.location.href === "https://www.golfzoncounty.com/myround/mileage") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_마일리지 방문",
-          },
-        },
-        {
-          // PC_마이라운드
-          name: "PC_마이라운드 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://www.golfzoncounty.com/myround/")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_마이라운드 방문",
-          },
-        },
-        {
-          // PC_스윙영상
-          name: "PC_스윙영상 방문",
-          isMatch: () => {
-            if (window.location.href === "https://www.golfzoncounty.com/myround/swing") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_스윙영상 방문",
-          },
-        },
-        {
-          // PC_인증서
-          name: "PC_인증서 방문",
-          isMatch: () => {
-            if (window.location.href === "https://www.golfzoncounty.com/myround/certification") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_인증서 방문",
-          },
-        },
-        {
-          // PC_필드기록
-          name: "PC_필드기록 방문",
-          isMatch: () => {
-            if (window.location.href === "https://www.golfzoncounty.com/myround/fieldhistory") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "PC_필드기록 방문",
-          },
-        },
-        {
-          // MO_필드기록
-          name: "MO_필드기록 방문",
-          isMatch: () => {
-            if (window.location.href === "https://m.golfzoncounty.com/myround/fieldhistory") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_필드기록 방문",
-          },
-        },
-        {
-          // MO_고객만족도 평가
-          name: "MO_고객만족도 평가 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://m.golfzoncounty.com/survey")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_고객만족도 평가 방문",
-          },
-        },
-        {
-          // MO_스코어카드
-          name: "MO_스코어카드 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://m.golfzoncounty.com/scoreCard")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_스코어카드 방문",
-          },
-        },
-        {
-          // MO_공지사항
-          name: "MO_공지사항 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://m.golfzoncounty.com/countyBoard/notice")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_공지사항 방문",
-          },
-        },
-        {
-          // MO_미션_NOW
-          name: "MO_미션_NOW 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://m.golfzoncounty.com/myround/mission/now")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_미션_NOW 방문",
-          },
-        },
-        {
-          // MO_골프장 공지사항
-          name: "MO_골프장 공지사항 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://m.golfzoncounty.com/gcounty/info/notice")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_골프장 공지사항 방문",
-          },
-        },
-        {
-          // MO_인증서
-          name: "MO_인증서 방문",
-          isMatch: () => {
-            if (window.location.href === "https://m.golfzoncounty.com/myround/certification") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_인증서 방문",
-          },
-        },
-        {
-          // MO_스윙영상
-          name: "MO_스윙영상 방문",
-          isMatch: () => {
-            if (window.location.href === "https://m.golfzoncounty.com/myround/swing") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_스윙영상 방문",
-          },
-        },
-        {
-          // MO_마이라운드
-          name: "MO_마이라운드 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://m.golfzoncounty.com/myround/main")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_마이라운드 방문",
-          },
-        },
-        {
-          // MO_마일리지
-          name: "MO_마일리지 방문",
-          isMatch: () => {
-            if (window.location.href === "https://m.golfzoncounty.com/myround/mileage") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_마일리지 방문",
-          },
-        },
-        {
-          // MO_예약 내역
-          name: "MO_예약 내역 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://m.golfzoncounty.com/reserve/info/booking")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_예약 내역 방문",
-          },
-        },
-        {
-          // MO_예약 안내
-          name: "MO_예약 안내 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://m.golfzoncounty.com/gcounty/info/reserve")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_예약 안내 방문",
-          },
-        },
-        {
-          // MO_회원혜택
-          name: "MO_회원혜택 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://m.golfzoncounty.com/common/benefits")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_회원혜택 방문",
-          },
-        },
-        {
-          // MO_내 프로필
-          name: "MO_내 프로필 방문",
-          isMatch: () => {
-            if (window.location.href === "https://m.golfzoncounty.com/myround/profile") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_내 프로필 방문",
-          },
-        },
-        {
-          // MO_고객센터
-          name: "MO_고객센터 방문",
-          isMatch: () => {
-            if (window.location.href === "https://m.golfzoncounty.com/common/config/customer?cd=cs") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_고객센터 방문",
-          },
-        },
-        {
-          // MO_로그인
-          name: "MO_로그인 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://m.golfzoncounty.com/member/login") || window.location.href.includes("https://m.golfzoncounty.com/#/login")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_로그인 방문",
-          },
-        },
-        {
-          // MO_본인인증
-          name: "MO_본인인증 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://m.golfzoncounty.com/myround/auth")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_본인인증 방문",
-          },
-        },
-        {
-          // MO_골프장이용약관
-          name: "MO_골프장 시설 이용약관 방문",
-          isMatch: () => {
-            if (window.location.href === "https://m.golfzoncounty.com/common/config/customer?cd=use" && SalesforceInteractions.cashDom(".top h2").text() === "골프장 시설 이용약관") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_골프장 시설 이용약관 방문",
-          },
-        },
-        {
-          // MO_영상정보처리기기
-          name: "MO_영상정보처리기기 방문",
-          isMatch: () => {
-            if (window.location.href === "https://m.golfzoncounty.com/common/config/customer?cd=use" && SalesforceInteractions.cashDom(".top h2").text() === "영상정보처리기기 운영·관리방침") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_영상정보처리기기 방문",
-          },
-        },
-        {
-          // MO_개인정보처리방침
-          name: "MO_개인정보처리방침 방문",
-          isMatch: () => {
-            if (window.location.href === "https://m.golfzoncounty.com/common/config/customer?cd=use" && SalesforceInteractions.cashDom(".top h2").text() === "개인정보처리방침") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_개인정보처리방침 방문",
-          },
-        },
-        {
-          // MO_서비스 이용약관
-          name: "MO_서비스 이용약관 방문",
-          isMatch: () => {
-            if (SalesforceInteractions.cashDom("#terms h2").text() === "서비스 이용약관") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_서비스이용약관 방문",
-          },
-        },
-        {
-          // MO_공지사항
-          name: "MO_공지사항 방문",
-          isMatch: () => {
-            if (window.location.href === "https://m.golfzoncounty.com/countyBoard/notice") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_공지사항 방문",
-          },
-        },
-        {
-          // MO_회원혜택
-          name: "MO_회원혜택 방문",
-          isMatch: () => {
-            if (window.location.href === "https://m.golfzoncounty.com/common/benefits") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_회원혜택 방문",
-          },
-        },
-        {
-          // MO_이용안내
-          name: "MO_이용안내 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://m.golfzoncounty.com/gcounty/info/use")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_이용안내 방문",
-          },
-        },
-        {
-          // MO_취소 및 예약규정
-          name: "MO_취소 및 예약규정 방문",
-          isMatch: () => {
-            if (window.location.href.includes("cancel")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_취소 및 예약규정 방문",
-          },
-        },
-        {
-          // MO_요금안내
-          name: "MO_요금안내 방문",
-          isMatch: () => {
-            if (window.location.href.includes("fee")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_요금안내 방문",
-          },
-        },
-        {
-          // MO_메인 페이지
-          name: "MO_메인 방문",
-          isMatch: () => {
-            if (window.location.href === "http://m.golfzoncounty.com/" || window.location.href === "https://m.golfzoncounty.com/" || window.location.href.includes("https://m.golfzoncounty.com/main") || window.location.href === "https://mv2qa.golfzoncounty.com/" || window.location.href === "https://mv2qa.golfzoncounty.com/") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_메인 방문",
-          },
-          listeners: [
-            SalesforceInteractions.listener("click", ".home #content .btnContainer .btn2 button", (ele) => {
-              SalesforceInteractions.sendEvent({
-                interaction: {
-                  name: `MO_메인_회원가입 클릭`,
-                },
-              })
-            }),
-            SalesforceInteractions.listener("click", ".home #content .quickMenu a", (e) => {
-              console.log(e.currentTarget);
-              console.log(e.currentTarget.href);
-              alert(e.currentTarget.href);
-              const targetElHref = e.currentTarget.href;
-
-              if (targetElHref === "https://m.golfzoncounty.com/reserve/main") {
-                SalesforceInteractions.sendEvent({
-                  interaction: {
-                    name: `MO_메인_예약 클릭`,
-                  },
-                })
-              } else if (targetElHref === "https://m.golfzoncounty.com/myround/mission/main") {
-                SalesforceInteractions.sendEvent({
-                  interaction: {
-                    name: `MO_메인_미션 클릭`,
-                  },
-                })
-              } else if (targetElHref === "https://m.golfzoncounty.com/myround/coupon") {
-                SalesforceInteractions.sendEvent({
-                  interaction: {
-                    name: `MO_메인_쿠폰 클릭`,
-                  },
-                })
-              } else if (targetElHref === "https://m.golfzoncounty.com/myround/main") {
-                SalesforceInteractions.sendEvent({
-                  interaction: {
-                    name: `MO_메인_마이라운드 클릭`,
-
-                  },
-                })
-              } else if (targetElHref === "https://m.golfzoncounty.com/gcounty/list") {
-                SalesforceInteractions.sendEvent({
-                  interaction: {
-                    name: `MO_메인_골프장 클릭`,
-                  },
-                })
+            //티스캐너에서 회원가입 클릭을 확인하기 위함.
+            SalesforceInteractions.listener("click", ".join-btn-area li:last-child a", (el) => {
+              const targetEl = SalesforceInteractions.cashDom(el.target);
+              if (targetEl !== null) {
+                const btnJoin = SalesforceInteractions.cashDom(targetEl).text();
+                if (btnJoin === "회원가입") {
+                  SalesforceInteractions.sendEvent({
+                    interaction: {
+                      name: "회원가입 클릭"
+                    }
+                  });
+                }
               }
             }),
-          ],
+          ]
         },
         {
-          // MO_예약안내
-          name: "MO_예약안내 방문",
+          name: "예약 목록(골프장형) 방문",
           isMatch: () => {
-            if (SalesforceInteractions.cashDom("#top h2").text() === "예약안내") {
+            if (window.location.pathname === "/booking/list" && window.location.search.includes("tab=golfcourse")) {
               return true;
             }
           },
           interaction: {
-            name: "MO_예약안내 방문",
-          },
-        },
-        {
-          // MO_모바일 설정 페이지
-          name: "MO_모바일 설정 방문",
-          isMatch: () => {
-            if (window.location.href === "https://m.golfzoncounty.com/common/config/all") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_모바일 설정 방문",
-          },
-        },
-        {
-          // MO_예약 완료 페이지
-          name: "MO_예약 완료 방문",
-          isMatch: () => {
-            if (SalesforceInteractions.cashDom(".reserveComplete").length > 0) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_예약 완료 방문",
-          },
-        },
-        {
-          // MO_이벤트 페이지
-          name: "MO_이벤트 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://m.golfzoncounty.com/countyBoard/event")) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_이벤트 방문",
-          },
-        },
-        {
-          // MO_예약 확인/정보 페이지
-          name: "MO_예약 확인/정보 방문",
-          isMatch: () => {
-            if (SalesforceInteractions.cashDom(".reserveConfirm").length > 0) {
-              return true;
-            }
-          },
-          interaction: {
-            name: "MO_예약 확인/정보 방문",
-          },
-        },
-        {
-          // MO_예약 확인/정보 페이지
-          name: "[TEST] MO_예약 확인/정보 방문",
-          isMatch: () => {
-            if (window.location.href === "https://mv2qa.golfzoncounty.com/reserve/main") {
-              return true;
-            }
-          },
-          interaction: {
-            name: "[TEST] MO_예약 확인/정보 방문",
+            name: "예약 목록(골프장형) 방문"
           },
           contentZones: [
-            {
-              name: "[TEST]콘텐츠존1", selector: "#top"
+            { name: "예약 목록(골프장형)", selector: ".infinite-scroll-component__outerdiv ul.golf-info-list:not(.ttime)" }
+          ]
+        },
+        {
+          name: "예약 목록(티타임형) 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/booking/list" && window.location.search.includes("tab=teetime")) {
+              return true;
             }
-          ],
+          },
+          interaction: {
+            name: "예약 목록(티타임형) 방문"
+          },
+          contentZones: [
+            { name: "예약 목록(티타임형)", selector: ".infinite-scroll-component__outerdiv ul.golf-info-list.ttime" }
+          ]
+        },
+        // {
+        //     name: "골프장 예약 목록 방문",
+        //     isMatch: () => {
+        //         if(window.location.pathname === "/booking/list") {
+        //             return true;
+        //         }
+        //     },
+        //     interaction: {
+        //         name: "골프장 예약 목록 방문"
+        //     },
+        //     contentZones: [
+        //         { name: "골프장 목록(골프장형)", selector: ".infinite-scroll-component__outerdiv ul.golf-info-list:not(.ttime)" },
+        //         { name: "골프장 목록(티타임형)", selector: ".infinite-scroll-component__outerdiv ul.golf-info-list.ttime" }
+        //     ],
+        //     listeners: [
+        //         SalesforceInteractions.listener("click", ".filter-tab-wrap .filter-tab > li > button", (el) => {
+        //             const btnTab = SalesforceInteractions.cashDom(el.target);
+        //             const btnTabType = SalesforceInteractions.cashDom(btnTab).attr("data-filter-tab");
+        //             //선택한 탭 확인
+        //             if(btnTabType === "golfcourse") {
+        //                 //골프장형 선택
+        //                 SalesforceInteractions.sendEvent({
+        //                     interaction: {
+        //                         name: "골프장형 예약 목록 조회"
+        //                     }
+        //                 });
+        //             } else if(btnTabType === "teetime") {
+        //                 //티타임형 선택
+        //                 SalesforceInteractions.sendEvent({
+        //                     interaction: {
+        //                         name: "티타임형 예약 목록 조회"
+        //                     }
+        //                 });
+        //             } else {
+        //                 //null
+        //             }
+        //         })
+        //     ]
+        // },
+        {
+          name: "골프장 상세 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/booking/detail") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "골프장 상세 방문",
+            catalogObject: {
+              type: "Product",
+              id: () => {
+                return golfClubSeq
+              },
+              attributes: {
+                name: SalesforceInteractions.cashDom(".header .navigation .tit span").text(),
+                url: SalesforceInteractions.resolvers.fromHref(),
+                imageUrl: SalesforceInteractions.resolvers.fromSelectorAttribute(".thumnail-info .swiper-wrapper .swiper-slide:first-child img", "src", (url) => url)
+              }
+            }
+          },
+          //탭 선택
+          //티타임, 골프장 소개, 리뷰, 블로그리뷰, 골프장 소식
+          //tabType = teetime, introduce, review, blogReview, news
+        },
+        {
+          name: "결제 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/booking/detail/pay") {
+              return true
+            }
+          },
+          interaction: {
+            name: "결제 방문"
+          },
           listeners: [
-            SalesforceInteractions.listener("click", ".before", (e) => {
-
-              SalesforceInteractions.sendEvent({
-
-                interaction: {
-                  name: `[TEST] MO_예약_오픈전 클릭`,
-                },
+            SalesforceInteractions.listener("click", ".reserve-wrap.inform-wrap > .lst-info-wrap > .btn-area .btn.active", (el) => {
+              let reserItem = [];
+              sessionStorage.removeItem("reserItem");
+              const btnPay = SalesforceInteractions.cashDom(el.target);
+              const payWrap = SalesforceInteractions.cashDom(btnPay).closest(".reserve-wrap.inform-wrap");
+              const payInfo = SalesforceInteractions.cashDom(payWrap).find(".lst-info-wrap .lst-info-content-area:nth-child(1)");
+              //인원
+              const reserCnt = parseInt(SalesforceInteractions.cashDom(payInfo).find(".lst-info-content:nth-child(2) .lst-info-area:nth-child(1) .info").text().replaceAll(/[^0-9]/g, ""));
+              //가격
+              const reserPrice = parseInt(SalesforceInteractions.cashDom(payInfo).find(".lst-info-content:nth-child(2) .lst-info-area:nth-child(2) .lst-info li:nth-child(3) strong").text().replaceAll(/[^0-9]/g, ""));
+              let lineItem = {
+                catalogObjectType: "Product",
+                catalogObjectId: teetimeSeq,
+                price: reserPrice,
+                quantity: reserCnt
+              }
+              reserItem.push(lineItem);
+              sessionStorage.setItem("reserItem", JSON.stringify(reserItem));
+            }),
+          ]
+        },
+        {
+          name: "결제 완료 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/booking/detail/pay/complete") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "결제 완료 방문",
+            order: {
+              id: bookingSeq,
+              lineItems: SalesforceInteractions.DisplayUtils.pageElementLoaded(".reserve-wrap", "html").then(() => {
+                let bookingOrderItems = [];
+                bookingOrderItems = JSON.parse(sessionStorage.getItem("reserItem"));
+                return bookingOrderItems;
               })
-
+            }
+          }
+        },
+        {
+          name: "골프장 예약 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/booking/detail/reservation") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "골프장 예약 방문"
+          },
+          listeners: [
+            SalesforceInteractions.listener("click", ".layer-popup-wrap.reserve-check > .btn-area > .btn", (el) => {
+              let reserItem = [];
+              sessionStorage.removeItem("reserItem");
+              const btnReser = SalesforceInteractions.cashDom(el.target);
+              const reserWrap = SalesforceInteractions.cashDom(btnReser).closest(".reserve-check");
+              const reserInfo = SalesforceInteractions.cashDom(reserWrap).find(".layer-pop-contents");
+              //인원
+              const reserCnt = parseInt(SalesforceInteractions.cashDom(reserInfo).find(".lst-info-area:nth-child(1) .lst-info > li:nth-child(5) strong").text().replaceAll(/[^0-9]/g, ""));
+              //가격
+              const reserPrice = parseInt(SalesforceInteractions.cashDom(reserInfo).find(".lst-info-area:nth-child(2) .lst-info.info-type01 > li:nth-child(2) strong").text().replaceAll(/[^0-9]/g, ""));
+              let lineItem = {
+                catalogObjectType: "Product",
+                catalogObjectId: teetimeSeq,
+                price: reserPrice,
+                quantity: reserCnt
+              }
+              reserItem.push(lineItem);
+              sessionStorage.setItem("reserItem", JSON.stringify(reserItem));
+            }),
+          ]
+        },
+        {
+          name: "골프장 예약 완료 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/booking/detail/reservation/complete") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "골프장 예약 완료 방문",
+            order: {
+              id: bookingSeq,
+              lineItems: SalesforceInteractions.DisplayUtils.pageElementLoaded(".reserve-wrap", "html").then(() => {
+                let bookingOrderItems = [];
+                bookingOrderItems = JSON.parse(sessionStorage.getItem("reserItem"));
+                return bookingOrderItems;
+              })
+            }
+          }
+        },
+        {
+          name: "기획전 목록 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/booking/exhibition/list") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "기획전 목록 방문"
+          }
+        },
+        {
+          name: "기획전 상세 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/booking/exhibition/detail") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "기획전 상세 방문"
+          }
+        },
+        {
+          name: "투어 목록 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/tour/list") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "투어 목록 방문"
+          }
+          //국내 투어, 해외 투어 방문 시도 코드 필요
+          //tourType = 52 = 국내
+          //tourType = 53 = 해외
+        },
+        {
+          name: "투어 상세 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/tour/detail") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "투어 상세 방문"
+          }
+        },
+        {
+          name: "상세 검색(부킹) 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/search/booking") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "상세 검색(부킹) 방문"
+          },
+          listeners: [
+            SalesforceInteractions.listener("click", ".srch-list-wrap .srch-golf-list li .list-info", (el) => {
+              const listItem = SalesforceInteractions.cashDom(el.target);
+              const golfcourseName = SalesforceInteractions.cashDom(listItem).find("strong").text();
+              sessionStorage.setItem("golfcourseName", golfcourseName);
+              SalesforceInteractions.sendEvent({
+                interaction: {
+                  name: "검색 골프장 선택"
+                },
+                user: {
+                  attributes: {
+                    latestSrhGreen: golfcourseName
+                  }
+                }
+              })
             })
           ]
         },
         {
-          // MO_골프텔 페이지
-          name: "MO_골프텔 방문",
+          name: "상세 검색 결과(부킹) 방문",
           isMatch: () => {
-            if (SalesforceInteractions.cashDom(".golftel").length > 0) {
-              return true
-            }
-          },
-          interaction: {
-            name: "MO_골프텔 방문",
-          },
-        },
-        {
-          // MO_예약(티타임선택) 페이지
-          name: "MO_예약(티타임선택) 방문",
-          isMatch: () => {
-            if (window.location.href.includes("https://m.golfzoncounty.com/reserve/main") && SalesforceInteractions.cashDom(".ga4_event_reserve").length > 0) {
+            if (window.location.pathname === "/search/booking/result") {
               return true;
             }
           },
           interaction: {
-            name: "MO_예약(티타임선택) 방문",
+            name: "상세 검색 결과(부킹) 방문"
           },
           listeners: [
-            SalesforceInteractions.listener("click", "#selectReserve button", (ele) => {
+            SalesforceInteractions.listener("click", ".booking-wrap .infinite-scroll-component__outerdiv .golf-info-list .golfclub_li .golf-inner-info .place button", (el) => {
+              const listItem = SalesforceInteractions.cashDom(el.target);
+              const golfcourseName = SalesforceInteractions.cashDom(listItem).find("strong").text();
+              sessionStorage.setItem("golfcourseName", golfcourseName);
               SalesforceInteractions.sendEvent({
                 interaction: {
-                  name: `MO_예약(티타임선택)_예약하기 모바일 클릭`,
+                  name: "검색 골프장 선택"
                 },
+                user: {
+                  attributes: {
+                    latestSrhGreen: golfcourseName
+                  }
+                }
               })
-            }),
+            })
           ]
         },
         {
-          // MO_골프장 예약(티타임선택) 페이지
-          name: "MO_골프장 예약(티타임선택) 방문",
+          name: "상세 검색(투어) 방문",
           isMatch: () => {
-            if (window.location.href.includes("https://m.golfzoncounty.com/reserve/main")) {
+            if (window.location.pathname === "/search/tour") {
               return true;
             }
           },
           interaction: {
-            name: "MO_골프장 예약(티타임선택) 방문",
+            name: "상세 검색(투어) 방문"
           },
           listeners: [
-            SalesforceInteractions.listener("click", "#selectReserve button", (ele) => {
+            SalesforceInteractions.listener("click", ".detail-srch-wrap.search .detail-cont.result .srch-golf-list li .btn-select", (el) => {
+              const tourItem = SalesforceInteractions.cashDom(el.target);
+              const tourName = SalesforceInteractions.cashDom(tourItem).closest("li").find("div .info strong").text();
+              sessionStorage.setItem("srhTour", tourName)
               SalesforceInteractions.sendEvent({
                 interaction: {
-                  name: `MO_예약(티타임선택)_예약하기 모바일 클릭`,
+                  name: "검색 투어 선택"
                 },
+                user: {
+                  attributes: {
+                    latestSrhTour: tourName
+                  }
+                }
               })
-            }),
+            })
           ]
         },
         {
-          // MO_미션존 페이지 
-          name: "MO_미션존 방문",
+          name: "상세 검색 결과(투어) 방문",
           isMatch: () => {
-            if (window.location.href === "https://m.golfzoncounty.com/myround/mission/main") {
-              return true
-            }
-          },
-          interaction: {
-            name: "MO_미션존 방문",
-          },
-        },
-        {
-          // MO_쿠폰 페이지
-          name: "MO_쿠폰함 방문",
-          isMatch: () => {
-            if (window.location.href === "https://m.golfzoncounty.com/myround/coupon") {
-              return true
-            }
-          },
-          interaction: {
-            name: "MO_쿠폰함 방문",
-          },
-        },
-        {
-          // MO_골프장 목록
-          name: "MO_골프장 목록 방문",
-          isMatch: () => {
-            if (window.location.href === "https://m.golfzoncounty.com/gcounty/list") {
+            if (window.location.pathname === "/search/tour/result") {
               return true;
             }
           },
           interaction: {
-            name: "MO_골프장 목록 방문",
+            name: "상세 검색 결과(투어) 방문"
           },
+          listeners: [
+            SalesforceInteractions.listener("click", ".tour-contents .tour-info-wrap .infinite-scroll-component__outerdiv .tour-list li > button", (el) => {
+              const toruItem = SalesforceInteractions.cashDom(el.target);
+              const tourName = SalesforceInteractions.cashDom(toruItem).find(".info-wrap .tour-content-wrap .tour-content strong").text();
+              sessionStorage.setItem("srhTour", tourName)
+              SalesforceInteractions.sendEvent({
+                interaction: {
+                  name: "검색 투어 선택"
+                },
+                user: {
+                  attributes: {
+                    latestSrhTour: tourName
+                  }
+                }
+              });
+            })
+          ]
         },
         {
-          // MO_골프장 요약
-          name: "MO_골프장 요약 방문",
+          name: "내 예약 방문",
           isMatch: () => {
-            if (window.location.href.includes("https://m.golfzoncounty.com/gcounty/info/main")) {
+            if (window.location.pathname === "/home/myreservation") {
               return true;
             }
           },
           interaction: {
-            name: "MO_골프장 요약 방문",
-          },
+            name: "내 예약 방문"
+          }
         },
         {
-          // MO_호시그린
-          name: "MO_호시그린 방문",
+          name: "단체 예약 목록 방문",
           isMatch: () => {
-            if (window.location.href.includes("https://m.golfzoncounty.com/gcounty/info/others")) {
+            if (window.location.pathname === "/group/list") {
               return true;
             }
           },
           interaction: {
-            name: "MO_호시그린 방문",
-          },
+            name: "단체 예약 목록 방문"
+          }
         },
         {
-          // MO_코스소개
-          name: "MO_코스소개 방문",
+          name: "단체 예약 상세 방문",
           isMatch: () => {
-            if (window.location.href.includes("course")) {
+            if (window.location.pathname === "/group/detail") {
               return true;
             }
           },
           interaction: {
-            name: "MO_코스소개 방문",
-          },
+            name: "단체 예약 상세 방문"
+          }
         },
+        {
+          name: "단체 예약 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/group/reserve") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "단체 예약 방문"
+          }
+        },
+        {
+          name: "이벤트 목록 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/event/list") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "이벤트 목록 방문"
+          }
+        },
+        {
+          name: "이벤트 상세 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/event/detail") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "이벤트 상세 방문"
+          }
+        },
+        {
+          name: "My T 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/mypage/list") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "My T 방문"
+          }
+        },
+        {
+          name: "My T > 마일리지 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/mypage/mileage/list") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "My T > 마일리지 방문"
+          }
+        },
+        {
+          name: "My T > 내 쿠폰함 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/mypage/couponbox/list") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "My T > 내 쿠폰함 방문"
+          }
+        },
+        {
+          name: "My T > 나의 단골 골프장 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/mypage/regular/golfcourse") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "My T > 나의 단골 골프장 방문"
+          }
+        },
+        {
+          name: "My T > 찜 상품 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/mypage/favorite/item") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "My T > 찜 상품 방문"
+          }
+        },
+        {
+          name: "My T > 리뷰 현황 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/mypage/review/status") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "My T > 리뷰 현황 방문"
+          }
+        },
+        {
+          name: "My T > 티타임 신청 내역 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/booking/teetime/apply/list") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "My T > 티타임 신청 내역 방문"
+          }
+        },
+        {
+          name: "My T > 부킹 예약 및 결제 내역 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/mypage/history/booking/list") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "My T > 부킹 예약 및 결제 내역 방문"
+          }
+        },
+        {
+          name: "My T > 투어 예약 및 결제 내역 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/mypage/history/tour/list") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "My T > 투어 예약 및 결제 내역 방문"
+          }
+        },
+        {
+          name: "My T > 이벤트 참여 현황 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/mypage/event/status") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "My T > 이벤트 참여 현황 방문"
+          }
+        },
+        {
+          name: "My T > 즐겨찾기 골프장 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/mypage/favorite/golfcourse") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "My T > 즐겨찾기 골프장 방문"
+          }
+        },
+        {
+          name: "My T > 최근 본 골프장 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/mypage/recently/item") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "My T > 최근 본 골프장 방문"
+          }
+        },
+        {
+          name: "알림함 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/notify/list") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "알림함 방문"
+          }
+        },
+        {
+          name: "Push 알림 설정 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/setting/notify") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "Push 알림 설정 방문"
+          }
+        },
+        {
+          name: "설정 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/setting/list") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "설정 방문"
+          }
+        },
+        {
+          name: "계정 설정 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/setting/account") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "계정 설정 방문"
+          }
+        },
+        {
+          name: "회원 탈퇴 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/setting/withdraw/withdraw") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "회원 탈퇴 방문"
+          }
+        },
+        {
+          name: "마케팅 수신 동의 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/setting/marketing") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "마케팅 수신 동의 방문"
+          }
+        },
+        {
+          name: "약관 목록 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/setting/terms/list") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "약관 목록 방문"
+          }
+        },
+        {
+          name: "이용약관 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/setting/terms/use") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "이용약관 방문"
+          }
+        },
+        {
+          name: "개인정보 처리방침 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/setting/terms/privacy") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "개인정보 처리방침 방문"
+          }
+        },
+        {
+          name: "위치정보 이용약관 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/setting/terms/location") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "위치정보 이용약관 방문"
+          }
+        },
+        {
+          name: "위치기반서비스 이용약관 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/setting/terms/location/base") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "위치기반서비스 이용약관 방문"
+          }
+        },
+        {
+          name: "오픈소스라이선스 약관 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/setting/terms/license") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "오픈소스라이선스 약관 방문"
+          }
+        },
+        {
+          name: "골프장 리뷰 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/golfcourse/review/list") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "골프장 리뷰 방문"
+          }
+        },
+        {
+          name: "골프장 소식 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/golfcourse/news/list") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "골프장 소식 방문"
+          }
+        },
+        {
+          name: "골프장 소식 상세 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/golfcourse/news/detail") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "골프장 소식 상세 방문"
+          }
+        },
+        {
+          name: "공지사항 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/notice/list") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "공지사항 방문"
+          }
+        },
+        {
+          name: "공지사항 상세 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/notice/detail") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "공지사항 상세 방문"
+          }
+        },
+        {
+          name: "자주하는 질문 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/faq/list") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "자주하는 질문 방문"
+          }
+        },
+        {
+          name: "티타임알림 신청하기 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/booking/teetime/notify") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "티타임알림 신청하기 방문"
+          }
+        },
+        {
+          name: "티타임매칭 신청하기 방문",
+          isMatch: () => {
+            if (window.location.pathname === "/booking/teetime/matching") {
+              return true;
+            }
+          },
+          interaction: {
+            name: "티타임매칭 신청하기 방문"
+          }
+        }
       ]
-    };
+    }
 
-    SalesforceInteractions.initSitemap(sitemapConfig);
+    //SPA 페이지, 변화 감지
+    const handleSPAPageChange = () => {
+      let url = window.location.href;
+      const urlChangeInterval = setInterval(() => {
+        if (url !== window.location.href) {
+          url = window.location.href;
+          SalesforceInteractions.reinit();
+        }
+      }, 1500);
+      console.log(url);
+    }
 
-  });
+    handleSPAPageChange();
+
+    //Sitemap 초기화
+    SalesforceInteractions.initSitemap(config);
+  })
 }
