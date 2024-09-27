@@ -1,0 +1,28 @@
+
+/* PC 중앙모달팝업 */
+div.modal_popup{
+  width:454px;
+  height: 425px;
+  border-radius: 28px;
+  background-color: red;
+  position: fixed;
+  left:50%;
+  top:50%;
+  transform: translate(-50%, -50%);
+}
+
+
+
+/* MO 바텀시트 아래 > 위 */
+div.mo_modal_popup{
+  width:100%;
+  height: 46.94%;
+  position: fixed;
+  left:0px;
+  bottom:0px;
+  border-radius: 28px 28px 0px 0px;
+  background-color: red;
+}
+
+
+
