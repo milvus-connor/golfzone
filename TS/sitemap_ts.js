@@ -1,5 +1,5 @@
 //Sitemap 적용시간
-console.log("2024-09-26 14:51");
+console.log("2024-09-29 23:29");
 
 //허용 도메인
 // qav2 테스트 페이지
@@ -72,52 +72,46 @@ const hostDomain = window.location.hostname;
             //     }
             // }
 
+            //parameter 값 가져오기
+            const getParams = (parameter) => {
+                const urlParams = new URL(window.location.href).searchParams;
+                const paramValue = urlParams.get(`${parameter}`);
+                return paramValue;
+            }
+
+            //상세 페이지 Round Day 제외 URL
+            const getHref = () => {
+                const url = window.location.href;
+                const roundStr = url.slice(-20);
+                const href = url.replace(roundStr, "");
+                return href;
+            }
+            
+            //그린피 가져오기
+            const getGreenFee = (index) => {
+                const greenFeeEl = SalesforceInteractions.cashDom(".detail-tab-wrap .intro-txt-info > ul li:nth-child(10) span:nth-child(2)");
+                if (greenFeeEl.length > 0) {
+                    const greenFees = SalesforceInteractions.cashDom(greenFeeEl).text().split("/");
+                    const greenFee = greenFees[index]?.replaceAll(/[^0-9]/g, "");
+                    return greenFee;
+                }
+            }
             
             //Parameter 값 가져오기
-            const getUrl = new URL(window.location.href);
-            const urlParams = getUrl.searchParams;
-            //Tour Type
-            const tourType = urlParams.get("tourType");
-            //Tour Type Seq
-            const tourTypeSeq = urlParams.get("tourTypeSeq");
-            //Tab 
-            const tabType = urlParams.get("tab");
-            //골프장 번호
-            const golfClubSeq = urlParams.get("golfclub_seq");
-            //티타임 번호
-            const teetimeSeq = urlParams.get("teetime_seq");
-            //예약 번호
-            const bookingSeq = urlParams.get("order_booking_seq");
-            
-
-            //골프장 상세 방문 확인
-            // const chkDetailType = () => {
-            //     //골프장 이름 탭 별로 방문 페이지 이름 변경
-            //     let pageName;
-            //     if(window.location.pathname === "/booking/detail") {
-            //         switch(tabType) {
-            //             case "teetime":
-            //                 pageName = "골프장 상세(티타임) 방문";
-            //                 break;
-            //             case "introduce":
-            //                 pageName = "골프장 상세(골프장 소개) 방문";
-            //                 break;
-            //             case "review":
-            //                 pageName = "골프장 상세(리뷰) 방문";
-            //                 break;
-            //             case "blogReview":
-            //                 pageName = "골프장 상세(블로그리뷰) 방문";
-            //                 break;
-            //             case "news":
-            //                 pageName = "골프장 상세(골프장 소식) 방문";
-            //                 break;
-            //             default: 
-            //                 pageName = "골프장 상세 방문"
-            //                 break;
-            //         }
-            //         return pageName;
-            //     }
-            // }
+            // const getUrl = new URL(window.location.href);
+            // const urlParams = getUrl.searchParams;
+            // //Tour Type
+            // const tourType = urlParams.get("tourType");
+            // //Tour Type Seq
+            // const tourTypeSeq = urlParams.get("tourTypeSeq");
+            // //Tab 
+            // const tabType = urlParams.get("tab");
+            // //골프장 번호
+            // const golfClubSeq = urlParams.get("golfclub_seq");
+            // //티타임 번호
+            // const teetimeSeq = urlParams.get("teetime_seq");
+            // //예약 번호
+            // const bookingSeq = urlParams.get("order_booking_seq");
 
 
             //접속 디바이스 확인
@@ -332,24 +326,163 @@ const hostDomain = window.location.hostname;
                     // },
                     {
                         name: "골프장 상세(티타임) 방문",
-                        isMatch: () => {
-                            if(window.location.pathname === "/booking/detail" && window.location.search.includes("tab=teetime")) {
-                                return true;
-                            }
-                        },
+                        // isMatch: () => {
+                        //     if(window.location.pathname === "/booking/detail" && window.location.search.includes("tab=teetime")) {
+                        //         return true;
+                        //     }
+                        // },
+                        isMatch: () => new Promise((resolve, reject) => {
+                            setTimeout(() => {
+                                return SalesforceInteractions.DisplayUtils.pageElementLoaded(".booking-detail.wrap .detail-tab-wrap", "html").then(() => {
+                                    if(window.location.pathname === "/booking/detail" && window.location.search.includes("tab=teetime")) {
+                                        resolve(true);
+                                    }
+                                });
+                            }, 1500);
+                        }),
                         interaction: {
-                            name: "골프장 상세(티타임) 방문"
+                            name: "골프장 상세(티타임) 방문",
+                            catalogObject: {
+                                type: "Product",
+                                id: () => {
+                                    return getParams("golfclub_seq");
+                                },
+                                attributes: {
+                                    name: SalesforceInteractions.cashDom(".header .navigation .tit span").text(),
+                                    url: getHref(),
+                                    // imageUrl: SalesforceInteractions.resolvers.fromSelectorAttribute(".thumnail-info .swiper-wrapper .swiper-slide:first-child img", "src", (url) => url),
+                                    rating: SalesforceInteractions.cashDom(".golf-thumbnail-wrap .course-info-wrap .review-num-area .star-score").text()
+                                }
+                            }
                         }
                     },
                     {
-                        name: "골프장 상세(골프장 소개) 방문",
-                        isMatch: () => {
-                            if(window.location.pathname === "/booking/detail" && window.location.search.includes("tab=introduce")) {
-                                return true;
-                            }
-                        },
+                        name: "골프장 상세(골프장소개) 방문",
+                        // isMatch: () => {
+                        //     if(window.location.pathname === "/booking/detail" && window.location.search.includes("tab=introduce")) {
+                        //         return true;
+                        //     }
+                        // },
+                        isMatch: () => new Promise((resolve, reject) => {
+                            setTimeout(() => {
+                                return SalesforceInteractions.DisplayUtils.pageElementLoaded(".booking-detail.wrap .detail-tab-wrap", "html").then(() => {
+                                    if(window.location.pathname === "/booking/detail" && window.location.search.includes("tab=introduce")) {
+                                        resolve(true);
+                                    }
+                                });
+                            }, 1500);
+                        }),
                         interaction: {
-                            name: "골프장 상세(골프장 소개) 방문"
+                            name: "골프장 상세(골프장소개) 방문",
+                            catalogObject: {
+                                type: "Product",
+                                id: () => {
+                                    return getParams("golfclub_seq");
+                                },
+                                attributes: {
+                                    name: SalesforceInteractions.cashDom(".header .navigation .tit span").text(),
+                                    url: getHref(),
+                                    // imageUrl: SalesforceInteractions.resolvers.fromSelectorAttribute(".thumnail-info .swiper-wrapper .swiper-slide:first-child img", "src", (url) => url),
+                                    rating: SalesforceInteractions.cashDom(".golf-thumbnail-wrap .course-info-wrap .review-num-area .star-score").text(),
+                                    weekdayGreenFee: getGreenFee(0),
+                                    weekendGreenFee: getGreenFee(1),
+                                    cartFee: SalesforceInteractions.cashDom(".detail-tab-wrap .intro-txt-info > ul li:nth-child(11) span:nth-child(2)").text().replaceAll(/[^0-9]/g, ""),
+                                    caddyFee: SalesforceInteractions.cashDom(".detail-tab-wrap .intro-txt-info > ul li:nth-child(12) span:nth-child(2)").text().replaceAll(/[^0-9]/g, ""),
+                                }
+                            }
+                        }
+                    },
+                    {
+                        name: "골프장 상세(리뷰) 방문",
+                        // isMatch: () => {
+                        //     if(window.location.pathname === "/booking/detail" && window.location.search.includes("tab=review")) {
+                        //         return true;
+                        //     }
+                        // },
+                        isMatch: () => new Promise((resolve, reject) => {
+                            setTimeout(() => {
+                                return SalesforceInteractions.DisplayUtils.pageElementLoaded(".booking-detail.wrap .detail-tab-wrap", "html").then(() => {
+                                    if(window.location.pathname === "/booking/detail" && window.location.search.includes("tab=review")) {
+                                        resolve(true);
+                                    }
+                                });
+                            }, 1500);
+                        }),
+                        interaction: {
+                            name: "골프장 상세(리뷰) 방문",
+                            catalogObject: {
+                                type: "Product",
+                                id: () => {
+                                    return getParams("golfclub_seq");
+                                },
+                                attributes: {
+                                    name: SalesforceInteractions.cashDom(".header .navigation .tit span").text(),
+                                    url: getHref(),
+                                    // imageUrl: SalesforceInteractions.resolvers.fromSelectorAttribute(".thumnail-info .swiper-wrapper .swiper-slide:first-child img", "src", (url) => url)
+                                }
+                            }
+                        }
+                    },
+                    {
+                        name: "골프장 상세(블로그리뷰) 방문",
+                        // isMatch: () => {
+                        //     if(window.location.pathname === "/booking/detail" && window.location.search.includes("tab=blogReview")) {
+                        //         return true;
+                        //     }
+                        // },
+                        isMatch: () => new Promise((resolve, reject) => {
+                            setTimeout(() => {
+                                return SalesforceInteractions.DisplayUtils.pageElementLoaded(".booking-detail.wrap .detail-tab-wrap", "html").then(() => {
+                                    if(window.location.pathname === "/booking/detail" && window.location.search.includes("tab=blogReview")) {
+                                        resolve(true);
+                                    }
+                                });
+                            }, 1500);
+                        }),
+                        interaction: {
+                            name: "골프장 상세(블로그리뷰) 방문",
+                            catalogObject: {
+                                type: "Product",
+                                id: () => {
+                                    return getParams("golfclub_seq");
+                                },
+                                attributes: {
+                                    name: SalesforceInteractions.cashDom(".header .navigation .tit span").text(),
+                                    url: getHref(),
+                                    // imageUrl: SalesforceInteractions.resolvers.fromSelectorAttribute(".thumnail-info .swiper-wrapper .swiper-slide:first-child img", "src", (url) => url)
+                                }
+                            }
+                        }
+                    },
+                    {
+                        name: "골프장 상세(골프장소식) 방문",
+                        // isMatch: () => {
+                        //     if(window.location.pathname === "/booking/detail" && window.location.search.includes("tab=news")) {
+                        //         return true;
+                        //     }
+                        // },
+                        isMatch: () => new Promise((resolve, reject) => {
+                            setTimeout(() => {
+                                return SalesforceInteractions.DisplayUtils.pageElementLoaded(".booking-detail.wrap .detail-tab-wrap", "html").then(() => {
+                                    if(window.location.pathname === "/booking/detail" && window.location.search.includes("tab=news")) {
+                                        resolve(true);
+                                    }
+                                });
+                            }, 1500);
+                        }),
+                        interaction: {
+                            name: "골프장 상세(골프장소식) 방문",
+                            catalogObject: {
+                                type: "Product",
+                                id: () => {
+                                    return getParams("golfclub_seq");
+                                },
+                                attributes: {
+                                    name: SalesforceInteractions.cashDom(".header .navigation .tit span").text(),
+                                    url: getHref(),
+                                    // imageUrl: SalesforceInteractions.resolvers.fromSelectorAttribute(".thumnail-info .swiper-wrapper .swiper-slide:first-child img", "src", (url) => url)
+                                }
+                            }
                         }
                     },
                     // {
@@ -378,6 +511,57 @@ const hostDomain = window.location.hostname;
                     //     //tabType = teetime, introduce, review, blogReview, news
                     // },
                     {
+                        name: "예약 방문",
+                        isMatch: () => {
+                            if(window.location.pathname === "/booking/detail/reservation") {
+                                return true;
+                            }
+                        },
+                        interaction: {
+                            name: "예약 방문"
+                        },
+                        listeners: [
+                            SalesforceInteractions.listener("click", ".layer-popup-wrap.reserve-check > .btn-area > .btn", (el) => {
+                                let reserItem = [];
+                                sessionStorage.removeItem("reserItem");
+                                const btnReser = SalesforceInteractions.cashDom(el.target);
+                                const reserWrap = SalesforceInteractions.cashDom(btnReser).closest(".reserve-check");
+                                const reserInfo = SalesforceInteractions.cashDom(reserWrap).find(".layer-pop-contents");
+                                //인원
+                                const reserCnt = parseInt(SalesforceInteractions.cashDom(reserInfo).find(".lst-info-area:nth-child(1) .lst-info > li:nth-child(5) strong").text().replaceAll(/[^0-9]/g, ""));
+                                //가격
+                                const reserPrice = parseInt(SalesforceInteractions.cashDom(reserInfo).find(".lst-info-area:nth-child(2) .lst-info.info-type01 > li:nth-child(2) strong").text().replaceAll(/[^0-9]/g, ""));
+                                let lineItem = {
+                                    catalogObjectType: "Product",
+                                    catalogObjectId: getParams("teetime_seq"),
+                                    price: reserPrice,
+                                    quantity: reserCnt    
+                                }
+                                reserItem.push(lineItem);
+                                sessionStorage.setItem("reserItem", JSON.stringify(reserItem));
+                            }),
+                        ]
+                    },
+                    {
+                        name: "예약 완료 방문",
+                        isMatch: () => {
+                            if(window.location.pathname === "/booking/detail/reservation/complete") {
+                                return true;
+                            }
+                        },
+                        interaction: {
+                            name: "예약 완료 방문",
+                            order: {
+                                id: getParams("order_booking_seq"),
+                                lineItems : SalesforceInteractions.DisplayUtils.pageElementLoaded(".reserve-wrap", "html").then(() => {
+                                    let bookingOrderItems = [];
+                                    bookingOrderItems = JSON.parse(sessionStorage.getItem("reserItem"));
+                                    return bookingOrderItems;
+                                })
+                            }
+                        }
+                    },
+                    {
                         name: "결제 방문",
                         isMatch: () => {
                             if(window.location.pathname === "/booking/detail/pay") {
@@ -400,7 +584,7 @@ const hostDomain = window.location.hostname;
                                 const reserPrice = parseInt(SalesforceInteractions.cashDom(payInfo).find(".lst-info-content:nth-child(2) .lst-info-area:nth-child(2) .lst-info li:nth-child(3) strong").text().replaceAll(/[^0-9]/g, ""));
                                 let lineItem = {
                                     catalogObjectType: "Product",
-                                    catalogObjectId: teetimeSeq,
+                                    catalogObjectId: getParams("teetime_seq"),
                                     price: reserPrice,
                                     quantity: reserCnt    
                                 }
@@ -419,58 +603,7 @@ const hostDomain = window.location.hostname;
                         interaction: {
                             name: "결제 완료 방문",
                             order: {
-                                id: bookingSeq,
-                                lineItems : SalesforceInteractions.DisplayUtils.pageElementLoaded(".reserve-wrap", "html").then(() => {
-                                    let bookingOrderItems = [];
-                                    bookingOrderItems = JSON.parse(sessionStorage.getItem("reserItem"));
-                                    return bookingOrderItems;
-                                })
-                            }
-                        }
-                    },
-                    {
-                        name: "골프장 예약 방문",
-                        isMatch: () => {
-                            if(window.location.pathname === "/booking/detail/reservation") {
-                                return true;
-                            }
-                        },
-                        interaction: {
-                            name: "골프장 예약 방문"
-                        },
-                        listeners: [
-                            SalesforceInteractions.listener("click", ".layer-popup-wrap.reserve-check > .btn-area > .btn", (el) => {
-                                let reserItem = [];
-                                sessionStorage.removeItem("reserItem");
-                                const btnReser = SalesforceInteractions.cashDom(el.target);
-                                const reserWrap = SalesforceInteractions.cashDom(btnReser).closest(".reserve-check");
-                                const reserInfo = SalesforceInteractions.cashDom(reserWrap).find(".layer-pop-contents");
-                                //인원
-                                const reserCnt = parseInt(SalesforceInteractions.cashDom(reserInfo).find(".lst-info-area:nth-child(1) .lst-info > li:nth-child(5) strong").text().replaceAll(/[^0-9]/g, ""));
-                                //가격
-                                const reserPrice = parseInt(SalesforceInteractions.cashDom(reserInfo).find(".lst-info-area:nth-child(2) .lst-info.info-type01 > li:nth-child(2) strong").text().replaceAll(/[^0-9]/g, ""));
-                                let lineItem = {
-                                    catalogObjectType: "Product",
-                                    catalogObjectId: teetimeSeq,
-                                    price: reserPrice,
-                                    quantity: reserCnt    
-                                }
-                                reserItem.push(lineItem);
-                                sessionStorage.setItem("reserItem", JSON.stringify(reserItem));
-                            }),
-                        ]
-                    },
-                    {
-                        name: "골프장 예약 완료 방문",
-                        isMatch: () => {
-                            if(window.location.pathname === "/booking/detail/reservation/complete") {
-                                return true;
-                            }
-                        },
-                        interaction: {
-                            name: "골프장 예약 완료 방문",
-                            order: {
-                                id: bookingSeq,
+                                id: getParams("order_booking_seq"),
                                 lineItems : SalesforceInteractions.DisplayUtils.pageElementLoaded(".reserve-wrap", "html").then(() => {
                                     let bookingOrderItems = [];
                                     bookingOrderItems = JSON.parse(sessionStorage.getItem("reserItem"));
@@ -499,6 +632,39 @@ const hostDomain = window.location.hostname;
                         },
                         interaction: {
                             name: "기획전 상세 방문"
+                        }
+                    },
+                    {
+                        name: "티타임알림 신청하기 방문",
+                        isMatch: () => {
+                            if(window.location.pathname === "/booking/teetime/notify") {
+                                return true;
+                            }
+                        },
+                        interaction: {
+                            name: "티타임알림 신청하기 방문"
+                        }
+                    },
+                    {
+                        name: "티타임매칭 신청하기 방문",
+                        isMatch: () => {
+                            if(window.location.pathname === "/booking/teetime/matching") {
+                                return true;
+                            }
+                        },
+                        interaction: {
+                            name: "티타임매칭 신청하기 방문"
+                        }
+                    },
+                    {
+                        name: "티타임 신청 내역 방문",
+                        isMatch: () => {
+                            if(window.location.pathname === "/booking/teetime/apply/list") {
+                                return true;
+                            }
+                        },
+                        interaction: {
+                            name: "티타임 신청 내역 방문"
                         }
                     },
                     {
@@ -661,50 +827,6 @@ const hostDomain = window.location.hostname;
                         ]
                     },
                     {
-                        name: "내 예약 방문",
-                        isMatch: () => {
-                            if(window.location.pathname === "/home/myreservation") {
-                                return true;
-                            }
-                        },
-                        interaction: {
-                            name: "내 예약 방문"
-                        }
-                    },
-                    {
-                        name: "단체 예약 목록 방문",
-                        isMatch: () => {
-                            if(window.location.pathname === "/group/list") {
-                                return true;
-                            }
-                        },
-                        interaction: {
-                            name: "단체 예약 목록 방문"
-                        }
-                    },
-                    {
-                        name: "단체 예약 상세 방문",
-                        isMatch: () => {
-                            if(window.location.pathname === "/group/detail") {
-                                return true;
-                            }
-                        },
-                        interaction: {
-                            name: "단체 예약 상세 방문"
-                        }
-                    },
-                    {
-                        name: "단체 예약 방문",
-                        isMatch: () => {
-                            if(window.location.pathname === "/group/reserve") {
-                                return true;
-                            }
-                        },
-                        interaction: {
-                            name: "단체 예약 방문"
-                        }
-                    },
-                    {
                         name: "이벤트 목록 방문",
                         isMatch: () => {
                             if(window.location.pathname === "/event/list") {
@@ -727,6 +849,17 @@ const hostDomain = window.location.hostname;
                         }
                     },
                     {
+                        name: "내 예약 방문",
+                        isMatch: () => {
+                            if(window.location.pathname === "/home/myreservation") {
+                                return true;
+                            }
+                        },
+                        interaction: {
+                            name: "내 예약 방문"
+                        }
+                    },
+                    {
                         name: "My T 방문",
                         isMatch: () => {
                             if(window.location.pathname === "/mypage/list") {
@@ -738,124 +871,113 @@ const hostDomain = window.location.hostname;
                         }
                     },
                     {
-                        name: "My T > 마일리지 방문",
+                        name: "마일리지 방문",
                         isMatch: () => {
                             if(window.location.pathname === "/mypage/mileage/list") {
                                 return true;
                             }
                         },
                         interaction: {
-                            name: "My T > 마일리지 방문"
+                            name: "마일리지 방문"
                         }
                     },
                     {
-                        name: "My T > 내 쿠폰함 방문",
+                        name: "내 쿠폰함 방문",
                         isMatch: () => {
                             if(window.location.pathname === "/mypage/couponbox/list") {
                                 return true;
                             }
                         },
                         interaction: {
-                            name: "My T > 내 쿠폰함 방문"
+                            name: "내 쿠폰함 방문"
                         }
                     },
                     {
-                        name: "My T > 나의 단골 골프장 방문",
+                        name: "나의 단골 골프장 방문",
                         isMatch: () => {
                             if(window.location.pathname === "/mypage/regular/golfcourse") {
                                 return true;
                             }
                         },
                         interaction: {
-                            name: "My T > 나의 단골 골프장 방문"
+                            name: "나의 단골 골프장 방문"
                         }
                     },
                     {
-                        name: "My T > 찜 상품 방문",
+                        name: "찜 상품 방문",
                         isMatch: () => {
                             if(window.location.pathname === "/mypage/favorite/item") {
                                 return true;
                             }
                         },
                         interaction: {
-                            name: "My T > 찜 상품 방문"
+                            name: "찜 상품 방문"
                         }
                     },
                     {
-                        name: "My T > 리뷰 현황 방문",
+                        name: "리뷰 현황 방문",
                         isMatch: () => {
                             if(window.location.pathname === "/mypage/review/status") {
                                 return true;
                             }
                         },
                         interaction: {
-                            name: "My T > 리뷰 현황 방문"
+                            name: "리뷰 현황 방문"
                         }
                     },
                     {
-                        name: "My T > 티타임 신청 내역 방문",
-                        isMatch: () => {
-                            if(window.location.pathname === "/booking/teetime/apply/list") {
-                                return true;
-                            }
-                        },
-                        interaction: {
-                            name: "My T > 티타임 신청 내역 방문"
-                        }
-                    },
-                    {
-                        name: "My T > 부킹 예약 및 결제 내역 방문",
+                        name: "부킹 예약 및 결제 내역 방문",
                         isMatch: () => {
                             if(window.location.pathname === "/mypage/history/booking/list") {
                                 return true;
                             }
                         },
                         interaction: {
-                            name: "My T > 부킹 예약 및 결제 내역 방문"
+                            name: "부킹 예약 및 결제 내역 방문"
                         }
                     },
                     {
-                        name: "My T > 투어 예약 및 결제 내역 방문",
+                        name: "투어 예약 및 결제 내역 방문",
                         isMatch: () => {
                             if(window.location.pathname === "/mypage/history/tour/list") {
                                 return true;
                             }
                         },
                         interaction: {
-                            name: "My T > 투어 예약 및 결제 내역 방문"
+                            name: "투어 예약 및 결제 내역 방문"
                         }
                     },
                     {
-                        name: "My T > 이벤트 참여 현황 방문",
+                        name: "이벤트 참여 현황 방문",
                         isMatch: () => {
                             if(window.location.pathname === "/mypage/event/status") {
                                 return true;
                             }
                         },
                         interaction: {
-                            name: "My T > 이벤트 참여 현황 방문"
+                            name: "이벤트 참여 현황 방문"
                         }
                     },
                     {
-                        name: "My T > 즐겨찾기 골프장 방문",
+                        name: "즐겨찾기 골프장 방문",
                         isMatch: () => {
                             if(window.location.pathname === "/mypage/favorite/golfcourse") {
                                 return true;
                             }
                         },
                         interaction: {
-                            name: "My T > 즐겨찾기 골프장 방문"
+                            name: "즐겨찾기 골프장 방문"
                         }
                     },
                     {
-                        name: "My T > 최근 본 골프장 방문",
+                        name: "최근 본 골프장 방문",
                         isMatch: () => {
                             if(window.location.pathname === "/mypage/recently/item") {
                                 return true;
                             }
                         },
                         interaction: {
-                            name: "My T > 최근 본 골프장 방문"
+                            name: "최근 본 골프장 방문"
                         }
                     },
                     {
@@ -870,17 +992,6 @@ const hostDomain = window.location.hostname;
                         }
                     },
                     {
-                        name: "Push 알림 설정 방문",
-                        isMatch: () => {
-                            if(window.location.pathname === "/setting/notify") {
-                                return true;
-                            }
-                        },
-                        interaction: {
-                            name: "Push 알림 설정 방문"
-                        }
-                    },
-                    {
                         name: "설정 방문",
                         isMatch: () => {
                             if(window.location.pathname === "/setting/list") {
@@ -889,6 +1000,17 @@ const hostDomain = window.location.hostname;
                         },
                         interaction: {
                             name: "설정 방문"
+                        }
+                    },
+                    {
+                        name: "Push 알림 설정 방문",
+                        isMatch: () => {
+                            if(window.location.pathname === "/setting/notify") {
+                                return true;
+                            }
+                        },
+                        interaction: {
+                            name: "Push 알림 설정 방문"
                         }
                     },
                     {
@@ -903,25 +1025,25 @@ const hostDomain = window.location.hostname;
                         }
                     },
                     {
-                        name: "회원 탈퇴 방문",
+                        name: "회원탈퇴 방문",
                         isMatch: () => {
                             if(window.location.pathname === "/setting/withdraw/withdraw") {
                                 return true;
                             }
                         },
                         interaction: {
-                            name: "회원 탈퇴 방문"
+                            name: "회원탈퇴 방문"
                         }
                     },
                     {
-                        name: "마케팅 수신 동의 방문",
+                        name: "마케팅 수신동의 방문",
                         isMatch: () => {
                             if(window.location.pathname === "/setting/marketing") {
                                 return true;
                             }
                         },
                         interaction: {
-                            name: "마케팅 수신 동의 방문"
+                            name: "마케팅 수신동의 방문"
                         }
                     },
                     {
@@ -971,7 +1093,7 @@ const hostDomain = window.location.hostname;
                     {
                         name: "위치기반서비스 이용약관 방문",
                         isMatch: () => {
-                            if(window.location.pathname === "/setting/terms/location/base") {
+                            if(window.location.pahname === "/setting/terms/location/base") {
                                 return true;
                             }
                         },
@@ -1057,27 +1179,38 @@ const hostDomain = window.location.hostname;
                         }
                     },
                     {
-                        name: "티타임알림 신청하기 방문",
+                        name: "단체 예약 목록 방문",
                         isMatch: () => {
-                            if(window.location.pathname === "/booking/teetime/notify") {
+                            if(window.location.pathname === "/group/list") {
                                 return true;
                             }
                         },
                         interaction: {
-                            name: "티타임알림 신청하기 방문"
+                            name: "단체 예약 목록 방문"
                         }
                     },
                     {
-                        name: "티타임매칭 신청하기 방문",
+                        name: "단체 예약 상세 방문",
                         isMatch: () => {
-                            if(window.location.pathname === "/booking/teetime/matching") {
+                            if(window.location.pathname === "/group/detail") {
                                 return true;
                             }
                         },
                         interaction: {
-                            name: "티타임매칭 신청하기 방문"
+                            name: "단체 예약 상세 방문"
                         }
-                    }
+                    },
+                    {
+                        name: "단체 예약 방문",
+                        isMatch: () => {
+                            if(window.location.pathname === "/group/reserve") {
+                                return true;
+                            }
+                        },
+                        interaction: {
+                            name: "단체 예약 방문"
+                        }
+                    },
                 ]
             }
 
@@ -1090,7 +1223,6 @@ const hostDomain = window.location.hostname;
                         SalesforceInteractions.reinit();
                     }
                 }, 1500);
-                console.log(url);
             }
 
             handleSPAPageChange();
